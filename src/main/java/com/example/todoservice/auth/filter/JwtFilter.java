@@ -28,6 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (requestURI.startsWith("/api/members/signup")
                 || requestURI.startsWith("/api/auth/login")
                 || requestURI.startsWith("/api/auth/reissue") // RefreshToken 검증
+                || requestURI.startsWith("/h2-console")
         ) {
             filterChain.doFilter(request, response);
             return;
