@@ -23,9 +23,9 @@ public class JwtUtil {
     private final String issuer;
 
     public JwtUtil(
-            @Value("${spring.jwt.secret}") String secretKey,
-            @Value("${spring.jwt.token.access-expiration}") long accessTokenExpire,
-            @Value("${spring.jwt.token.refresh-expiration}") long refreshTokenExpire,
+            @Value("${jwt.secret}") String secretKey,
+            @Value("${jwt.token.access-expiration}") long accessTokenExpire,
+            @Value("${jwt.token.refresh-expiration}") long refreshTokenExpire,
             @Value("${spring.application.name}") String issuer
     ) {
         this.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
