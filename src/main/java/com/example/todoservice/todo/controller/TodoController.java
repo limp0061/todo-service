@@ -1,5 +1,6 @@
 package com.example.todoservice.todo.controller;
 
+import com.example.todoservice.common.annotation.LoginId;
 import com.example.todoservice.common.exception.ApiResponse;
 import com.example.todoservice.todo.dto.RepeatScope;
 import com.example.todoservice.todo.dto.TodoCalendarView;
@@ -40,9 +41,8 @@ public class TodoController {
     @PostMapping
     public ResponseEntity<ApiResponse<TodoSaveResponse>> registerTodo(
             @Valid @RequestBody TodoSaveRequest todoSaveRequest,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         TodoSaveResponse todoSaveResponse = todoService.registerTodos(todoSaveRequest, memberId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
@@ -53,9 +53,8 @@ public class TodoController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<TodoDetailResponse>>> getTodos(
             @Valid @ModelAttribute TodoFilterRequest todoFilterRequest,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         List<TodoDetailResponse> todos = todoService.getTodos(todoFilterRequest, memberId);
         return ResponseEntity.ok()
                 .body(
@@ -66,9 +65,8 @@ public class TodoController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TodoDetailResponse>> getTodoDetail(
             @PathVariable Long id,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         TodoDetailResponse todoDetail = todoService.getTodoDetail(id, memberId);
 
         return ResponseEntity.ok()
@@ -81,9 +79,8 @@ public class TodoController {
     public ResponseEntity<ApiResponse<TodoSaveResponse>> updateTodo(
             @PathVariable Long id,
             @Valid @RequestBody TodoUpdateRequest updateRequest,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         TodoSaveResponse todoSaveResponse = todoService.updateTodo(updateRequest, id, memberId);
         return ResponseEntity.ok()
                 .body(
@@ -95,9 +92,8 @@ public class TodoController {
     public ResponseEntity<ApiResponse<Void>> deleteTodo(
             @PathVariable Long id,
             @RequestParam RepeatScope scope,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         todoService.deleteTodo(id, memberId, scope);
 
         return ResponseEntity.noContent().build();
@@ -106,9 +102,8 @@ public class TodoController {
     @PatchMapping("/{id}/complete")
     public ResponseEntity<ApiResponse<TodoSaveResponse>> completeTodo(
             @PathVariable Long id,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         TodoSaveResponse todoSaveResponse = todoService.completeTodo(id, memberId);
         return ResponseEntity.ok()
                 .body(
@@ -120,10 +115,8 @@ public class TodoController {
     public ResponseEntity<ApiResponse<TodoDoneStats>> getStats(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
-
         TodoDoneStats todoDoneStats = todoService.getTodoDoneStats(startDate, endDate, memberId);
         return ResponseEntity.ok()
                 .body(
@@ -135,10 +128,8 @@ public class TodoController {
     public ResponseEntity<ApiResponse<List<TodoCalendarView>>> getCalendarView(
             @RequestParam int year,
             @RequestParam int month,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
-
         List<TodoCalendarView> calendarView = todoService.getCalendarView(year, month, memberId);
         return ResponseEntity.ok()
                 .body(

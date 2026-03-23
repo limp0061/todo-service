@@ -1,11 +1,11 @@
 package com.example.todoservice.tag.controller;
 
+import com.example.todoservice.common.annotation.LoginId;
 import com.example.todoservice.common.exception.ApiResponse;
 import com.example.todoservice.tag.dto.TagResponse;
 import com.example.todoservice.tag.dto.TagSaveRequest;
 import com.example.todoservice.tag.dto.TagUpdateRequest;
 import com.example.todoservice.tag.service.TagService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +30,8 @@ public class TagController {
     @PostMapping
     public ResponseEntity<ApiResponse<TagResponse>> registerTag(
             @Valid @RequestBody TagSaveRequest tagSaveRequest,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
-
         TagResponse tagResponse = tagService.registerTag(tagSaveRequest, memberId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
@@ -43,9 +41,8 @@ public class TagController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<TagResponse>>> getAllTags(
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         List<TagResponse> allTags = tagService.getAllTags(memberId);
         return ResponseEntity.ok(ApiResponse.success(allTags));
     }
@@ -54,9 +51,8 @@ public class TagController {
     public ResponseEntity<ApiResponse<TagResponse>> updateTag(
             @PathVariable Long id,
             @Valid @RequestBody TagUpdateRequest tagUpdateRequest,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         TagResponse tagResponse = tagService.updateTag(tagUpdateRequest, id, memberId);
         return ResponseEntity.ok((ApiResponse.success(tagResponse)));
     }
@@ -64,9 +60,8 @@ public class TagController {
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteTag(
             @PathVariable Long id,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         tagService.deleteTag(id, memberId);
 
         return ResponseEntity.noContent().build();
