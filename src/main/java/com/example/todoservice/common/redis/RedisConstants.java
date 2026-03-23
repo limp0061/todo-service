@@ -6,4 +6,5 @@ public class RedisConstants {
     }
 
     public static final String REFRESH_TOKEN_PREFIX = "refresh:";
+    public static final String TODO = "todo:";
 }

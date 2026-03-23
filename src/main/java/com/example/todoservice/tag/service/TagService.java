@@ -10,6 +10,7 @@ import com.example.todoservice.tag.dto.TagSaveRequest;
 import com.example.todoservice.tag.dto.TagUpdateRequest;
 import com.example.todoservice.tag.exception.TagErrorCode;
 import com.example.todoservice.tag.repository.TagRepository;
+import com.example.todoservice.todo.manager.TodoCacheManager;
 import com.example.todoservice.todoTag.repository.TodoTagRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class TagService {
     private final MemberRepository memberRepository;
     private final TagValidator tagValidator;
     private final TodoTagRepository todoTagRepository;
+    private final TodoCacheManager todoCacheManager;
 
     @Transactional
     public TagResponse registerTag(TagSaveRequest request, Long memberId) {
@@ -59,6 +61,7 @@ public class TagService {
 
         tag.update(request.name(), request.color());
 
+        todoCacheManager.evictTodayTodoCache(memberId);
         return TagResponse.from(tag);
     }
 
@@ -69,5 +72,7 @@ public class TagService {
 
         todoTagRepository.deleteByTagId(tag.getId());
         tagRepository.delete(tag);
+
+        todoCacheManager.evictTodayTodoCache(memberId);
     }
 }

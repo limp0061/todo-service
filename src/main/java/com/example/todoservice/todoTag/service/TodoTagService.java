@@ -6,6 +6,7 @@ import com.example.todoservice.tag.exception.TagErrorCode;
 import com.example.todoservice.tag.repository.TagRepository;
 import com.example.todoservice.todo.domain.Todo;
 import com.example.todoservice.todo.exception.TodoErrorCode;
+import com.example.todoservice.todo.manager.TodoCacheManager;
 import com.example.todoservice.todo.repository.TodoRepository;
 import com.example.todoservice.todoTag.domain.TodoTag;
 import com.example.todoservice.todoTag.dto.TodoTagResponse;
@@ -23,6 +24,7 @@ public class TodoTagService {
     private final TagRepository tagRepository;
     private final TodoTagValidator todoTagValidator;
     private final TodoTagRepository todoTagRepository;
+    private final TodoCacheManager todoCacheManager;
 
     @Transactional
     public TodoTagResponse addTagToTodo(Long todoId, Long tagId, Long memberId) {
@@ -40,6 +42,8 @@ public class TodoTagService {
                 .build();
 
         todoTagRepository.save(todoTag);
+
+        todoCacheManager.evictTodayTodoCache(memberId);
 
         return TodoTagResponse.from(todoTag);
     }
