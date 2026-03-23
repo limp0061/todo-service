@@ -2,6 +2,7 @@ package com.example.todoservice.todo.controller;
 
 import com.example.todoservice.common.exception.ApiResponse;
 import com.example.todoservice.todo.dto.RepeatScope;
+import com.example.todoservice.todo.dto.TodoDetailResponse;
 import com.example.todoservice.todo.dto.TodoFilterRequest;
 import com.example.todoservice.todo.dto.TodoSaveRequest;
 import com.example.todoservice.todo.dto.TodoSaveResponse;
@@ -46,12 +47,12 @@ public class TodoController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<TodoSaveResponse>>> getTodos(
+    public ResponseEntity<ApiResponse<List<TodoDetailResponse>>> getTodos(
             @Valid @ModelAttribute TodoFilterRequest todoFilterRequest,
             HttpServletRequest request
     ) {
         Long memberId = (Long) request.getAttribute("memberId");
-        List<TodoSaveResponse> todos = todoService.getTodos(todoFilterRequest, memberId);
+        List<TodoDetailResponse> todos = todoService.getTodos(todoFilterRequest, memberId);
         return ResponseEntity.ok()
                 .body(
                         ApiResponse.success(todos)
@@ -59,12 +60,12 @@ public class TodoController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<TodoSaveResponse>> getTodoDetail(
+    public ResponseEntity<ApiResponse<TodoDetailResponse>> getTodoDetail(
             @PathVariable Long id,
             HttpServletRequest request
     ) {
         Long memberId = (Long) request.getAttribute("memberId");
-        TodoSaveResponse todoDetail = todoService.getTodoDetail(id, memberId);
+        TodoDetailResponse todoDetail = todoService.getTodoDetail(id, memberId);
 
         return ResponseEntity.ok()
                 .body(

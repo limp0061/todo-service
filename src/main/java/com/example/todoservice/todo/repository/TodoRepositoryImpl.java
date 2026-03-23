@@ -1,12 +1,14 @@
 package com.example.todoservice.todo.repository;
 
 import static com.example.todoservice.todo.domain.QTodo.todo;
+import static com.example.todoservice.todoTag.domain.QTodoTag.todoTag;
 
 import com.example.todoservice.todo.domain.Priority;
 import com.example.todoservice.todo.domain.Todo;
 import com.example.todoservice.todo.domain.TodoStatus;
 import com.example.todoservice.todo.dto.TodoFilterRequest;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,9 +29,21 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
                         todo.member.id.eq(memberId),
                         priorityEq(request.getPriority()),
                         statusEq(request.getStatus()),
+                        tagIdEq(request.getTagId()),
                         scheduledDateBetween(request.getStartDate(), request.getEndDate())
                 )
                 .fetch();
+    }
+
+    private BooleanExpression tagIdEq(Long tagId) {
+        if (tagId == null) {
+            return null;
+        }
+        return todo.id.in(
+                JPAExpressions.select(todoTag.todo.id)
+                        .from(todoTag)
+                        .where(todoTag.tag.id.eq(tagId))
+        );
     }
 
     @Override
