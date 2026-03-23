@@ -24,6 +24,18 @@ public class TodoValidator {
                 throw new BusinessException(TodoErrorCode.TODO_INVALID_REPEAT_END_DATE);
             }
         }
+
+        LocalDate maxEndDate = switch (repeatType) {
+            case DAILY -> startDate.plusMonths(3);
+            case WEEKLY -> startDate.plusMonths(6);
+            case MONTHLY -> startDate.plusYears(1);
+            case YEARLY -> startDate.plusYears(3);
+            case NONE -> startDate;
+        };
+
+        if (repeatEndDate.isAfter(maxEndDate)) {
+            throw new BusinessException(TodoErrorCode.TODO_REPEAT_END_DATE_EXCEEDED);
+        }
     }
 
     public void validateDateRange(LocalDate startDate, LocalDate dueDate) {
