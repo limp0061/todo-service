@@ -8,7 +8,9 @@ import com.example.todoservice.tag.dto.TagResponse;
 import com.example.todoservice.todo.domain.RepeatType;
 import com.example.todoservice.todo.domain.Todo;
 import com.example.todoservice.todo.dto.RepeatScope;
+import com.example.todoservice.todo.dto.TodoCalendarView;
 import com.example.todoservice.todo.dto.TodoDetailResponse;
+import com.example.todoservice.todo.dto.TodoDoneStats;
 import com.example.todoservice.todo.dto.TodoFilterRequest;
 import com.example.todoservice.todo.dto.TodoSaveRequest;
 import com.example.todoservice.todo.dto.TodoSaveResponse;
@@ -17,6 +19,7 @@ import com.example.todoservice.todo.exception.TodoErrorCode;
 import com.example.todoservice.todo.repository.TodoRepository;
 import com.example.todoservice.todoTag.domain.TodoTag;
 import com.example.todoservice.todoTag.repository.TodoTagRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -139,5 +142,18 @@ public class TodoService {
         todo.completeTodo();
 
         return TodoSaveResponse.from(todo);
+    }
+
+    public TodoDoneStats getTodoDoneStats(LocalDate startDate, LocalDate endDate, Long memberId) {
+
+        return todoRepository.findDoneStats(startDate, endDate, memberId);
+
+    }
+
+    public List<TodoCalendarView> getCalendarView(int year, int month, Long memberId) {
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        return todoRepository.findCalendarView(startDate, endDate, memberId);
     }
 }

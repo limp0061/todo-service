@@ -6,7 +6,10 @@ import static com.example.todoservice.todoTag.domain.QTodoTag.todoTag;
 import com.example.todoservice.todo.domain.Priority;
 import com.example.todoservice.todo.domain.Todo;
 import com.example.todoservice.todo.domain.TodoStatus;
+import com.example.todoservice.todo.dto.TodoCalendarView;
+import com.example.todoservice.todo.dto.TodoDoneStats;
 import com.example.todoservice.todo.dto.TodoFilterRequest;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -53,6 +56,38 @@ public class TodoRepositoryImpl implements TodoRepositoryCustom {
                         todo.parent.id.eq(id),
                         scheduledDateAfter(scheduledDate)
                 ).execute();
+    }
+
+    @Override
+    public TodoDoneStats findDoneStats(LocalDate startDate, LocalDate endDate, Long memberId) {
+        return queryFactory.select(
+                        Projections.constructor(TodoDoneStats.class,
+                                todo.count(),
+                                todo.status.when(TodoStatus.DONE).then(1L).otherwise(0L).sum()
+                        )
+                )
+                .where(
+                        todo.member.id.eq(memberId),
+                        scheduledDateBetween(startDate, endDate)
+                )
+                .from(todo)
+                .fetchOne();
+    }
+
+    @Override
+    public List<TodoCalendarView> findCalendarView(LocalDate startDate, LocalDate endDate, Long memberId) {
+        return queryFactory.select(
+                        Projections.constructor(TodoCalendarView.class,
+                                todo.scheduledDate,
+                                todo.count()
+                        )
+                ).from(todo)
+                .where(
+                        todo.member.id.eq(memberId),
+                        scheduledDateBetween(startDate, endDate)
+                )
+                .groupBy(todo.scheduledDate)
+                .fetch();
     }
 
     private BooleanExpression priorityEq(Priority priority) {

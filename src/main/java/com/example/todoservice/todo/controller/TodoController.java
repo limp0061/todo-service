@@ -2,7 +2,9 @@ package com.example.todoservice.todo.controller;
 
 import com.example.todoservice.common.exception.ApiResponse;
 import com.example.todoservice.todo.dto.RepeatScope;
+import com.example.todoservice.todo.dto.TodoCalendarView;
 import com.example.todoservice.todo.dto.TodoDetailResponse;
+import com.example.todoservice.todo.dto.TodoDoneStats;
 import com.example.todoservice.todo.dto.TodoFilterRequest;
 import com.example.todoservice.todo.dto.TodoSaveRequest;
 import com.example.todoservice.todo.dto.TodoSaveResponse;
@@ -10,8 +12,10 @@ import com.example.todoservice.todo.dto.TodoUpdateRequest;
 import com.example.todoservice.todo.service.TodoService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -109,6 +113,36 @@ public class TodoController {
         return ResponseEntity.ok()
                 .body(
                         ApiResponse.success(todoSaveResponse)
+                );
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<ApiResponse<TodoDoneStats>> getStats(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            HttpServletRequest request
+    ) {
+        Long memberId = (Long) request.getAttribute("memberId");
+
+        TodoDoneStats todoDoneStats = todoService.getTodoDoneStats(startDate, endDate, memberId);
+        return ResponseEntity.ok()
+                .body(
+                        ApiResponse.success(todoDoneStats)
+                );
+    }
+
+    @GetMapping("/calendar")
+    public ResponseEntity<ApiResponse<List<TodoCalendarView>>> getCalendarView(
+            @RequestParam int year,
+            @RequestParam int month,
+            HttpServletRequest request
+    ) {
+        Long memberId = (Long) request.getAttribute("memberId");
+
+        List<TodoCalendarView> calendarView = todoService.getCalendarView(year, month, memberId);
+        return ResponseEntity.ok()
+                .body(
+                        ApiResponse.success(calendarView)
                 );
     }
 }
