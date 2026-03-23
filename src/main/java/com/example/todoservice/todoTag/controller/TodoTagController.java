@@ -1,9 +1,9 @@
 package com.example.todoservice.todoTag.controller;
 
+import com.example.todoservice.common.annotation.LoginId;
 import com.example.todoservice.common.exception.ApiResponse;
 import com.example.todoservice.todoTag.dto.TodoTagResponse;
 import com.example.todoservice.todoTag.service.TodoTagService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +23,8 @@ public class TodoTagController {
     public ResponseEntity<ApiResponse<TodoTagResponse>> registerTodoTag(
             @PathVariable Long id,
             @PathVariable Long tagId,
-            HttpServletRequest request
+            @LoginId Long memberId
     ) {
-        Long memberId = (Long) request.getAttribute("memberId");
         TodoTagResponse todoTagResponse = todoTagService.addTagToTodo(id, tagId, memberId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(todoTagResponse));
