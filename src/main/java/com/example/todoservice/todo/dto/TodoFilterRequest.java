@@ -24,4 +24,5 @@ public class TodoFilterRequest {
 
     private TodoStatus status;
     private Priority priority;
+    private Long tagId;
 }
