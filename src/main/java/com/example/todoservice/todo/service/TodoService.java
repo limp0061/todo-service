@@ -16,6 +16,7 @@ import com.example.todoservice.todo.dto.TodoSaveRequest;
 import com.example.todoservice.todo.dto.TodoSaveResponse;
 import com.example.todoservice.todo.dto.TodoUpdateRequest;
 import com.example.todoservice.todo.exception.TodoErrorCode;
+import com.example.todoservice.todo.manager.TodoCacheManager;
 import com.example.todoservice.todo.repository.TodoRepository;
 import com.example.todoservice.todoTag.domain.TodoTag;
 import com.example.todoservice.todoTag.repository.TodoTagRepository;
@@ -37,6 +38,8 @@ public class TodoService {
     private final TodoValidator todoValidator;
     private final TodoFactory todoFactory;
     private final TodoTagRepository todoTagRepository;
+    private final TodoCacheManager todoCacheManager;
+
 
     @Transactional
     public TodoSaveResponse registerTodos(TodoSaveRequest request, Long memberId) {
@@ -57,35 +60,20 @@ public class TodoService {
             List<Todo> instances = todoFactory.createRepeatInstance(origin);
             todoRepository.saveAll(instances);
         }
+
+        todoCacheManager.evictTodayTodoCache(memberId);
+
         return TodoSaveResponse.from(origin);
     }
 
-    public List<TodoDetailResponse> getTodos(TodoFilterRequest request, Long memberId) {
+    public List<TodoDetailResponse> toDetailResponses(TodoFilterRequest request, Long memberId) {
         todoValidator.validateDateRange(
                 request.getStartDate(),
                 request.getEndDate()
         );
 
         List<Todo> todos = todoRepository.findAllByFilter(request, memberId);
-        List<Long> todoIds = todos.stream()
-                .map(Todo::getId)
-                .toList();
-
-        List<TodoTag> todoTags = todoTagRepository.findTagsByTodoIdIn(todoIds);
-
-        Map<Long, List<TagResponse>> toMap = todoTags.stream()
-                .collect(Collectors.groupingBy(
-                        todoTag -> todoTag.getTodo().getId(),
-                        Collectors.mapping(todoTag -> TagResponse.from(todoTag.getTag()), Collectors.toList())
-                ));
-
-        return todos.stream()
-                .map(
-                        todo -> TodoDetailResponse.of(
-                                todo,
-                                toMap.getOrDefault(todo.getId(), List.of())
-                        )
-                ).toList();
+        return toDetailResponses(todos);
     }
 
     public TodoDetailResponse getTodoDetail(Long todoId, Long memberId) {
@@ -118,6 +106,8 @@ public class TodoService {
             todoFactory.updateRepeatInstance(todo, request);
         }
 
+        todoCacheManager.evictTodayTodoCache(memberId);
+
         return TodoSaveResponse.from(todo);
     }
 
@@ -132,6 +122,8 @@ public class TodoService {
         } else {
             todoFactory.deleteRepeatInstance(todo, scope);
         }
+
+        todoCacheManager.evictTodayTodoCache(memberId);
     }
 
     @Transactional
@@ -140,6 +132,7 @@ public class TodoService {
                 .orElseThrow(() -> new BusinessException(TodoErrorCode.TODO_NOT_FOUND));
 
         todo.completeTodo();
+        todoCacheManager.evictTodayTodoCache(memberId);
 
         return TodoSaveResponse.from(todo);
     }
@@ -147,7 +140,6 @@ public class TodoService {
     public TodoDoneStats getTodoDoneStats(LocalDate startDate, LocalDate endDate, Long memberId) {
 
         return todoRepository.findDoneStats(startDate, endDate, memberId);
-
     }
 
     public List<TodoCalendarView> getCalendarView(int year, int month, Long memberId) {
@@ -155,5 +147,39 @@ public class TodoService {
         LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
 
         return todoRepository.findCalendarView(startDate, endDate, memberId);
+    }
+
+    public List<TodoDetailResponse> getTodayTodo(Long memberId) {
+
+        List<TodoDetailResponse> cachedTodos = todoCacheManager.getTodayTodoCache(memberId);
+        if (cachedTodos == null) {
+            List<Todo> todos = todoRepository.findByMemberIdAndScheduledDate(memberId, LocalDate.now());
+            cachedTodos = toDetailResponses(todos);
+            todoCacheManager.setTodayTodoCache(memberId, cachedTodos);
+        }
+
+        return cachedTodos;
+    }
+
+    private List<TodoDetailResponse> toDetailResponses(List<Todo> todos) {
+        List<Long> todoIds = todos.stream()
+                .map(Todo::getId)
+                .toList();
+
+        List<TodoTag> todoTags = todoTagRepository.findTagsByTodoIdIn(todoIds);
+
+        Map<Long, List<TagResponse>> toMap = todoTags.stream()
+                .collect(Collectors.groupingBy(
+                        todoTag -> todoTag.getTodo().getId(),
+                        Collectors.mapping(todoTag -> TagResponse.from(todoTag.getTag()), Collectors.toList())
+                ));
+
+        return todos.stream()
+                .map(
+                        todo -> TodoDetailResponse.of(
+                                todo,
+                                toMap.getOrDefault(todo.getId(), List.of())
+                        )
+                ).toList();
     }
 }

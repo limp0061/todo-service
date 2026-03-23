@@ -15,8 +15,9 @@ public class RedisManager {
         redisTemplate.opsForValue().set(key, value, duration, timeUnit);
     }
 
-    public Object get(String key) {
-        return redisTemplate.opsForValue().get(key);
+    @SuppressWarnings("unchecked")
+    public <T> T get(String key) {
+        return (T) redisTemplate.opsForValue().get(key);
     }
 
     public void delete(String key) {

@@ -11,7 +11,6 @@ import com.example.todoservice.todo.dto.TodoSaveRequest;
 import com.example.todoservice.todo.dto.TodoSaveResponse;
 import com.example.todoservice.todo.dto.TodoUpdateRequest;
 import com.example.todoservice.todo.service.TodoService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
@@ -55,7 +54,7 @@ public class TodoController {
             @Valid @ModelAttribute TodoFilterRequest todoFilterRequest,
             @LoginId Long memberId
     ) {
-        List<TodoDetailResponse> todos = todoService.getTodos(todoFilterRequest, memberId);
+        List<TodoDetailResponse> todos = todoService.toDetailResponses(todoFilterRequest, memberId);
         return ResponseEntity.ok()
                 .body(
                         ApiResponse.success(todos)
@@ -135,5 +134,17 @@ public class TodoController {
                 .body(
                         ApiResponse.success(calendarView)
                 );
+    }
+
+    @GetMapping("/today")
+    public ResponseEntity<ApiResponse<List<TodoDetailResponse>>> getTodayTodo(
+            @LoginId Long memberId
+    ) {
+        List<TodoDetailResponse> todayTodos = todoService.getTodayTodo(memberId);
+        return ResponseEntity.ok()
+                .body(
+                        ApiResponse.success(todayTodos)
+                );
+
     }
 }
