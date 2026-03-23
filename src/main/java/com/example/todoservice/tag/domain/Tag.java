@@ -14,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.util.StringUtils;
 
 @Getter
 @Entity
@@ -40,5 +41,14 @@ public class Tag extends BaseEntity {
         this.member = member;
         this.name = name;
         this.color = color;
+    }
+
+    public void update(String name, String color) {
+        if (StringUtils.hasText(name)) {
+            this.name = name;
+        }
+        if (StringUtils.hasText(color)) {
+            this.color = color;
+        }
     }
 }
